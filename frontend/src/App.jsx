@@ -63,6 +63,7 @@ function App() {
 
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     if (auth) {
@@ -188,6 +189,18 @@ function App() {
     }
   }, [joined]);
 
+  // Focus the textarea after it renders
+  useEffect(() => {
+    if (editingText && textareaRef.current) {
+      // Use requestAnimationFrame to ensure DOM is fully painted before focusing
+      requestAnimationFrame(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      });
+    }
+  }, [editingText]);
+
   const handleAuth = async (e) => {
     e.preventDefault();
     setAuthError('');
@@ -214,8 +227,12 @@ function App() {
   };
 
   const handleMouseDown = (e) => {
-    if (action === 'typing') {
-      // Allow onBlur to handle the finalization to avoid double-firing
+    // If we're currently editing text, clicking on the canvas finalizes it
+    if (editingText) {
+      // Guard: don't finalize if this is the same click that created the text box
+      if (Date.now() - editingText._createdAt > 200) {
+        finalizeText();
+      }
       return;
     }
 
@@ -240,7 +257,7 @@ function App() {
     const seed = Math.floor(Math.random() * 10000);
 
     if (tool === 'text') {
-      setEditingText({ id, x, y, text: '', color, seed });
+      setEditingText({ id, x, y, text: '', color, seed, _createdAt: Date.now() });
       setAction('typing');
       return;
     }
@@ -300,14 +317,14 @@ function App() {
     if (action === 'drawing') {
       const currentElement = elements[elements.length - 1];
       socket.emit('draw-event', { sessionId: sessionInfo.sessionId, eventType: 'add', payload: currentElement });
+      setAction('none');
     } else if (action === 'moving' && selectedElementId) {
       const currentElement = elements.find(el => el.id === selectedElementId);
       if (currentElement) {
         socket.emit('update-element', { sessionId: sessionInfo.sessionId, payload: currentElement });
       }
+      setAction('none');
     }
-    
-    if (action !== 'typing') setAction('none');
   };
 
   const finalizeText = () => {
@@ -368,11 +385,18 @@ function App() {
   return (
     <div className="newspaper-container">
       <header className="newspaper-header">
-        <h1 className="newspaper-title">The Degree Times</h1>
-        <div className="newspaper-subinfo">
-          <span>Vol. I &middot; No. 1</span>
-          <span>Live Edition &middot; {new Date().toLocaleDateString()}</span>
-          <span>Session: {sessionInfo.sessionId}</span>
+        <div className="newspaper-top-row">
+          <span>VOL. I &middot; NO. 1</span>
+          <span>SPECIAL REPORT ON HIGHER EDUCATION</span>
+          <span>ONE DOLLAR</span>
+        </div>
+        <div className="newspaper-title-container">
+          <h1 className="newspaper-title">The Degree Times</h1>
+        </div>
+        <div className="newspaper-bottom-row">
+          <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}</span>
+          <span>ESTABLISHED MMXXVI</span>
+          <span>PRINT & DIGITAL EDITION &middot; SESSION: {sessionInfo.sessionId}</span>
         </div>
       </header>
 
@@ -405,31 +429,37 @@ function App() {
           {/* Inline Text Editor Overlay */}
           {editingText && (
             <textarea
-              autoFocus
+              ref={textareaRef}
+              onMouseDown={e => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
+              onKeyDown={e => {
+                if (e.key === 'Escape') finalizeText();
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) finalizeText();
+              }}
               style={{
                 position: 'absolute',
                 left: editingText.x,
                 top: editingText.y,
-                background: 'transparent',
-                border: '1px dashed var(--color-accent-red)',
+                background: 'rgba(244, 241, 234, 0.95)',
+                border: '2px dashed var(--color-accent-red)',
                 outline: 'none',
                 fontFamily: '"Playfair Display", serif',
                 fontSize: '24px',
                 fontWeight: 'bold',
                 color: editingText.color,
                 resize: 'both',
-                minWidth: '100px',
-                minHeight: '40px',
+                minWidth: '150px',
+                minHeight: '50px',
                 overflow: 'hidden',
-                padding: '0',
+                padding: '4px 6px',
                 margin: '0',
                 zIndex: 100,
-                lineHeight: '1',
-                boxShadow: 'none'
+                lineHeight: '1.2',
+                boxShadow: '0 0 0 1px rgba(167, 58, 43, 0.3)'
               }}
               value={editingText.text}
               onChange={e => setEditingText({ ...editingText, text: e.target.value })}
-              onBlur={finalizeText}
+              placeholder="Type here..."
             />
           )}
 
