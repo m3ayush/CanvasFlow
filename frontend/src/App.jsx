@@ -152,7 +152,10 @@ function App() {
         ctx.font = 'bold 24px "Playfair Display", serif';
         ctx.fillStyle = element.color || '#2c2c2c';
         ctx.textBaseline = 'top';
-        ctx.fillText(element.text, element.x, element.y);
+        const lines = element.text.split('\n');
+        lines.forEach((line, i) => {
+          ctx.fillText(line, element.x, element.y + (i * 28));
+        });
       }
 
       // Draw selection box
@@ -212,7 +215,7 @@ function App() {
 
   const handleMouseDown = (e) => {
     if (action === 'typing') {
-      finalizeText();
+      // Allow onBlur to handle the finalization to avoid double-firing
       return;
     }
 
@@ -310,7 +313,7 @@ function App() {
   const finalizeText = () => {
     if (editingText && editingText.text.trim()) {
       const newElement = { ...editingText, tool: 'text' };
-      setElements([...elements, newElement]);
+      setElements(prev => [...prev, newElement]);
       socket.emit('draw-event', { sessionId: sessionInfo.sessionId, eventType: 'add', payload: newElement });
     }
     setEditingText(null);
@@ -366,6 +369,11 @@ function App() {
     <div className="newspaper-container">
       <header className="newspaper-header">
         <h1 className="newspaper-title">The Degree Times</h1>
+        <div className="newspaper-subinfo">
+          <span>Vol. I &middot; No. 1</span>
+          <span>Live Edition &middot; {new Date().toLocaleDateString()}</span>
+          <span>Session: {sessionInfo.sessionId}</span>
+        </div>
       </header>
 
       <div className="main-layout">
