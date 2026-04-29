@@ -7,10 +7,10 @@
   --color-text-secondary: #4a4a4a;
   --color-accent-red: #a73a2b;
   --color-border: #2c2c2c;
-  
+
   --font-serif: 'Playfair Display', serif;
   --font-sans: 'Inter', sans-serif;
-  
+
   --shadow-vintage: 2px 2px 0px rgba(44, 44, 44, 0.2);
 }
 
@@ -137,7 +137,7 @@ body {
 }
 
 .tool-btn:hover {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-color: var(--color-border);
 }
 
@@ -202,14 +202,18 @@ body {
 
 /* Canvas Area */
 canvas {
-  touch-action: none; /* Important for drawing */
+  touch-action: none;
+  /* Important for drawing */
   display: block;
 }
 
 /* Connection Modal */
 .modal-overlay {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(244, 241, 234, 0.9);
   display: flex;
   justify-content: center;

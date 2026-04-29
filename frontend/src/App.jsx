@@ -51,7 +51,7 @@ function App() {
   const [sessionInfo, setSessionInfo] = useState({ sessionId: 'frontpage-1' });
   const [messages, setMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
-  
+
   const [elements, setElements] = useState([]);
   const [action, setAction] = useState('none');
   const [tool, setTool] = useState('pen');
@@ -133,25 +133,25 @@ function App() {
 
     elements.forEach(element => {
       if (element.tool === 'pen') {
-        const path = element.points.length > 1 
+        const path = element.points.length > 1
           ? element.points.map((p, i) => i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`).join(' ')
           : `M ${element.points[0].x} ${element.points[0].y} L ${element.points[0].x + 0.1} ${element.points[0].y + 0.1}`;
-        
-        roughCanvas.path(path, { 
-          stroke: element.color || '#2c2c2c', 
-          strokeWidth: element.strokeWidth || 2, 
+
+        roughCanvas.path(path, {
+          stroke: element.color || '#2c2c2c',
+          strokeWidth: element.strokeWidth || 2,
           roughness: 1.5,
           seed: element.seed
         });
       } else if (element.tool === 'rectangle') {
-        roughCanvas.rectangle(element.x, element.y, element.width, element.height, { 
-          stroke: element.color || '#2c2c2c', 
+        roughCanvas.rectangle(element.x, element.y, element.width, element.height, {
+          stroke: element.color || '#2c2c2c',
           strokeWidth: 2,
           seed: element.seed
         });
       } else if (element.tool === 'circle') {
-        roughCanvas.circle(element.x + element.width/2, element.y + element.height/2, Math.max(element.width, element.height), { 
-          stroke: element.color || '#2c2c2c', 
+        roughCanvas.circle(element.x + element.width / 2, element.y + element.height / 2, Math.max(element.width, element.height), {
+          stroke: element.color || '#2c2c2c',
           strokeWidth: 2,
           seed: element.seed
         });
@@ -271,7 +271,7 @@ function App() {
     if (tool === 'pen' || tool === 'eraser') {
       const elementColor = tool === 'eraser' ? '#f4f1ea' : color;
       const sw = tool === 'eraser' ? Math.max(strokeWidth * 3, 15) : strokeWidth;
-      const newElement = { id, tool: 'pen', points: [{x, y}], color: elementColor, strokeWidth: sw, seed };
+      const newElement = { id, tool: 'pen', points: [{ x, y }], color: elementColor, strokeWidth: sw, seed };
       setElements([...elements, newElement]);
       setAction('drawing');
     } else {
@@ -293,7 +293,7 @@ function App() {
       const currentElement = { ...elements[index] };
 
       if (currentElement.tool === 'pen') {
-        currentElement.points = [...currentElement.points, {x, y}];
+        currentElement.points = [...currentElement.points, { x, y }];
       } else {
         currentElement.width = x - currentElement.x;
         currentElement.height = y - currentElement.y;
@@ -359,7 +359,7 @@ function App() {
   };
 
   if (!auth) return <div className="modal-overlay"><div className="vintage-modal" style={{ maxWidth: '600px' }}><h2>Configuration Missing</h2></div></div>;
-  if (loading) return <div className="modal-overlay"><h2 style={{fontFamily: 'var(--font-serif)'}}>Loading the presses...</h2></div>;
+  if (loading) return <div className="modal-overlay"><h2 style={{ fontFamily: 'var(--font-serif)' }}>Loading the presses...</h2></div>;
 
   if (!user) {
     return (
@@ -369,9 +369,9 @@ function App() {
           <form onSubmit={handleAuth}>
             <input type="email" className="vintage-input" placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} required />
             <input type="password" className="vintage-input" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-            {authError && <p style={{color: 'var(--color-accent-red)', marginBottom: '1rem'}}>{authError}</p>}
-            <button type="submit" className="vintage-btn" style={{width: '100%', marginBottom: '1rem'}}>{authMode === 'login' ? 'SIGN IN' : 'SUBSCRIBE'}</button>
-            <p style={{fontSize: '0.9rem'}}><span style={{color: 'var(--color-accent-red)', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>{authMode === 'login' ? 'Subscribe' : 'Sign in'}</span></p>
+            {authError && <p style={{ color: 'var(--color-accent-red)', marginBottom: '1rem' }}>{authError}</p>}
+            <button type="submit" className="vintage-btn" style={{ width: '100%', marginBottom: '1rem' }}>{authMode === 'login' ? 'SIGN IN' : 'SUBSCRIBE'}</button>
+            <p style={{ fontSize: '0.9rem' }}><span style={{ color: 'var(--color-accent-red)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}>{authMode === 'login' ? 'Subscribe' : 'Sign in'}</span></p>
           </form>
         </div>
       </div>
@@ -381,14 +381,14 @@ function App() {
   if (!joined) {
     return (
       <div className="modal-overlay">
-        <div className="vintage-modal" style={{maxWidth: '500px'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', marginBottom: '1rem'}}>
+        <div className="vintage-modal" style={{ maxWidth: '500px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', marginBottom: '1rem' }}>
             <h2>Reader Dashboard</h2>
-            <button onClick={handleLogout} style={{background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', textDecoration: 'underline'}}>Log Out</button>
+            <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', textDecoration: 'underline' }}>Log Out</button>
           </div>
-          <form onSubmit={handleJoin} style={{textAlign: 'left', border: '1px dashed var(--color-border)', padding: '1.5rem', background: 'var(--color-bg-primary)'}}>
-            <input type="text" className="vintage-input" placeholder="Session ID (e.g. frontpage-1)" value={sessionInfo.sessionId} onChange={e => setSessionInfo({...sessionInfo, sessionId: e.target.value})} required />
-            <button type="submit" className="vintage-btn" style={{width: '100%'}}>OPEN CANVAS</button>
+          <form onSubmit={handleJoin} style={{ textAlign: 'left', border: '1px dashed var(--color-border)', padding: '1.5rem', background: 'var(--color-bg-primary)' }}>
+            <input type="text" className="vintage-input" placeholder="Session ID (e.g. frontpage-1)" value={sessionInfo.sessionId} onChange={e => setSessionInfo({ ...sessionInfo, sessionId: e.target.value })} required />
+            <button type="submit" className="vintage-btn" style={{ width: '100%' }}>OPEN CANVAS</button>
           </form>
         </div>
       </div>
@@ -398,13 +398,8 @@ function App() {
   return (
     <div className="newspaper-container">
       <header className="newspaper-header">
-        <div className="newspaper-top-row">
-          <span>VOL. I &middot; NO. 1</span>
-          <span>SPECIAL REPORT ON HIGHER EDUCATION</span>
-          <span>ONE DOLLAR</span>
-        </div>
         <div className="newspaper-title-container">
-          <h1 className="newspaper-title">The Degree Times</h1>
+          <h1 className="newspaper-title">CanvasFlow</h1>
         </div>
         <div className="newspaper-bottom-row">
           <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}</span>
@@ -421,7 +416,7 @@ function App() {
           <button className={`tool-btn ${tool === 'circle' ? 'active' : ''}`} onClick={() => setTool('circle')} title="Circle"><Circle size={24} /></button>
           <button className={`tool-btn ${tool === 'eraser' ? 'active' : ''}`} onClick={() => setTool('eraser')} title="Eraser (Whiteout)"><Eraser size={24} /></button>
           <button className={`tool-btn ${tool === 'text' ? 'active' : ''}`} onClick={() => setTool('text')} title="Text"><Type size={24} /></button>
-          
+
           {/* Stroke Size Slider */}
           <div style={{ marginTop: '1rem', padding: '0.8rem 0', borderTop: '1px solid var(--color-border)', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
             <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-secondary)' }}>Size</span>
@@ -440,9 +435,9 @@ function App() {
           {/* Color Palette */}
           <div style={{ padding: '0.8rem 0', borderTop: '1px solid var(--color-border)', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
             <Palette size={20} color="var(--color-text-secondary)" />
-            <button className="tool-btn" style={{backgroundColor: '#2c2c2c', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#2c2c2c' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#2c2c2c' ? '2px solid #2c2c2c' : 'none'}} onClick={() => setColor('#2c2c2c')} title="Ink Black"></button>
-            <button className="tool-btn" style={{backgroundColor: '#a73a2b', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#a73a2b' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#a73a2b' ? '2px solid #a73a2b' : 'none'}} onClick={() => setColor('#a73a2b')} title="Newspaper Red"></button>
-            <button className="tool-btn" style={{backgroundColor: '#214e34', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#214e34' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#214e34' ? '2px solid #214e34' : 'none'}} onClick={() => setColor('#214e34')} title="Vintage Green"></button>
+            <button className="tool-btn" style={{ backgroundColor: '#2c2c2c', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#2c2c2c' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#2c2c2c' ? '2px solid #2c2c2c' : 'none' }} onClick={() => setColor('#2c2c2c')} title="Ink Black"></button>
+            <button className="tool-btn" style={{ backgroundColor: '#a73a2b', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#a73a2b' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#a73a2b' ? '2px solid #a73a2b' : 'none' }} onClick={() => setColor('#a73a2b')} title="Newspaper Red"></button>
+            <button className="tool-btn" style={{ backgroundColor: '#214e34', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#214e34' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#214e34' ? '2px solid #214e34' : 'none' }} onClick={() => setColor('#214e34')} title="Vintage Green"></button>
           </div>
 
           {/* Clear Canvas Button */}
@@ -459,7 +454,7 @@ function App() {
             onMouseUp={handleMouseUp}
             onMouseOut={handleMouseUp}
           />
-          
+
           {/* Inline Text Editor Overlay */}
           {editingText && (
             <textarea
