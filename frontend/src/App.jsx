@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { io } from 'socket.io-client';
 import rough from 'roughjs/bundled/rough.esm.js';
-import { Pen, Square, Circle, Eraser, Type, MousePointer2, Palette } from 'lucide-react';
+import { Pen, Square, Circle, Eraser, Type, MousePointer2, Palette, Trash2 } from 'lucide-react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase.js';
 import './App.css';
@@ -56,6 +56,7 @@ function App() {
   const [action, setAction] = useState('none');
   const [tool, setTool] = useState('pen');
   const [color, setColor] = useState('#2c2c2c');
+  const [strokeWidth, setStrokeWidth] = useState(2);
   const [cursors, setCursors] = useState({});
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
@@ -106,6 +107,10 @@ function App() {
       });
     });
 
+    socket.on('clear-canvas', () => {
+      setElements([]);
+    });
+
     return () => {
       socket.off('session-joined');
       socket.off('draw-event');
@@ -113,6 +118,7 @@ function App() {
       socket.off('cursor-update');
       socket.off('chat-message');
       socket.off('user-left');
+      socket.off('clear-canvas');
     };
   }, []);
 
@@ -264,8 +270,8 @@ function App() {
 
     if (tool === 'pen' || tool === 'eraser') {
       const elementColor = tool === 'eraser' ? '#f4f1ea' : color;
-      const strokeWidth = tool === 'eraser' ? 20 : 2;
-      const newElement = { id, tool: 'pen', points: [{x, y}], color: elementColor, strokeWidth, seed };
+      const sw = tool === 'eraser' ? Math.max(strokeWidth * 3, 15) : strokeWidth;
+      const newElement = { id, tool: 'pen', points: [{x, y}], color: elementColor, strokeWidth: sw, seed };
       setElements([...elements, newElement]);
       setAction('drawing');
     } else {
@@ -345,6 +351,13 @@ function App() {
     }
   };
 
+  const handleClearCanvas = () => {
+    if (window.confirm('Clear the entire canvas? This cannot be undone.')) {
+      setElements([]);
+      socket.emit('clear-canvas', { sessionId: sessionInfo.sessionId });
+    }
+  };
+
   if (!auth) return <div className="modal-overlay"><div className="vintage-modal" style={{ maxWidth: '600px' }}><h2>Configuration Missing</h2></div></div>;
   if (loading) return <div className="modal-overlay"><h2 style={{fontFamily: 'var(--font-serif)'}}>Loading the presses...</h2></div>;
 
@@ -409,11 +422,32 @@ function App() {
           <button className={`tool-btn ${tool === 'eraser' ? 'active' : ''}`} onClick={() => setTool('eraser')} title="Eraser (Whiteout)"><Eraser size={24} /></button>
           <button className={`tool-btn ${tool === 'text' ? 'active' : ''}`} onClick={() => setTool('text')} title="Text"><Type size={24} /></button>
           
-          <div style={{ marginTop: '1rem', padding: '1rem 0', borderTop: '1px solid var(--color-border)', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
+          {/* Stroke Size Slider */}
+          <div style={{ marginTop: '1rem', padding: '0.8rem 0', borderTop: '1px solid var(--color-border)', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem' }}>
+            <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--color-text-secondary)' }}>Size</span>
+            <input
+              type="range"
+              min="1"
+              max="12"
+              value={strokeWidth}
+              onChange={e => setStrokeWidth(Number(e.target.value))}
+              style={{ width: '50px', accentColor: 'var(--color-text-primary)', cursor: 'pointer' }}
+              title={`Stroke: ${strokeWidth}px`}
+            />
+            <span style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', fontFamily: 'var(--font-sans)' }}>{strokeWidth}px</span>
+          </div>
+
+          {/* Color Palette */}
+          <div style={{ padding: '0.8rem 0', borderTop: '1px solid var(--color-border)', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
             <Palette size={20} color="var(--color-text-secondary)" />
             <button className="tool-btn" style={{backgroundColor: '#2c2c2c', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#2c2c2c' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#2c2c2c' ? '2px solid #2c2c2c' : 'none'}} onClick={() => setColor('#2c2c2c')} title="Ink Black"></button>
             <button className="tool-btn" style={{backgroundColor: '#a73a2b', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#a73a2b' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#a73a2b' ? '2px solid #a73a2b' : 'none'}} onClick={() => setColor('#a73a2b')} title="Newspaper Red"></button>
             <button className="tool-btn" style={{backgroundColor: '#214e34', width: 28, height: 28, borderRadius: '50%', padding: 0, border: color === '#214e34' ? '2px solid var(--color-bg-primary)' : '2px solid transparent', outline: color === '#214e34' ? '2px solid #214e34' : 'none'}} onClick={() => setColor('#214e34')} title="Vintage Green"></button>
+          </div>
+
+          {/* Clear Canvas Button */}
+          <div style={{ marginTop: 'auto', padding: '1rem 0', borderTop: '1px solid var(--color-border)', width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <button className="tool-btn" onClick={handleClearCanvas} title="Clear Canvas" style={{ color: 'var(--color-accent-red)' }}><Trash2 size={22} /></button>
           </div>
         </aside>
 

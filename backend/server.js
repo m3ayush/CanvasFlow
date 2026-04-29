@@ -82,6 +82,15 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Handle clear canvas
+  socket.on('clear-canvas', ({ sessionId }) => {
+    if (sessions.has(sessionId)) {
+      const session = sessions.get(sessionId);
+      session.canvasSnapshot = [];
+      socket.to(sessionId).emit('clear-canvas');
+    }
+  });
+
   // Handle cursor movement
   socket.on('cursor-move', ({ sessionId, x, y }) => {
     const session = sessions.get(sessionId);
